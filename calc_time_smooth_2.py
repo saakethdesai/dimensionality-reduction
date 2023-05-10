@@ -94,7 +94,7 @@ ax.plot(x_traj, y_traj, z_traj2 , color='orange', linewidth=5, label="Non smooth
 #set labels
 ax.set_xlabel(r"$x$", fontsize=25, labelpad=15)
 ax.set_ylabel(r"$y$", fontsize=25, labelpad=15)
-ax.set_zlabel(r"$z$", fontsize=25, labelpad=15)
+ax.set_zlabel(r"$z$", fontsize=25, labelpad=10)
 #fiddle with margins to get little overlap
 ax.axes.set_xlim3d(left=-0.99, right=1.01) 
 ax.axes.set_ylim3d(bottom=-0.99, top=1.00) 
