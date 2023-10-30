@@ -92,12 +92,12 @@ def ae_loss(recon_x, x):
 
 
 #----------------------------------------------#
-batch_size = 10
+batch_size = 1
 
 
 cwd = os.getcwd()
 
-hdffile = "/home/saaketh/dimensionality_reduction/testbed_dendrite/dendrite_512.h5" 
+hdffile = "/qscratch/saadesa/dimensionality_reduction/final_dataset/dendrite_512.h5"
 hf = h5py.File(hdffile, 'r')
 
 train_data = hf['train'][:]
@@ -106,9 +106,8 @@ test_data = hf['test'][:]
 
 print (train_data.shape, val_data.shape, test_data.shape)
 
-nbatches_train = len(train_data) // batch_size 
-nbatches_val = len(val_data) // batch_size
-nbatches_test = len(test_data) // batch_size 
+data = np.vstack((train_data, val_data, test_data))
+print (data.shape)
 
 
 #create model
@@ -119,29 +118,20 @@ num_params = sum(p.numel() for p in ae.parameters() if p.requires_grad)
 print('Number of parameters: %d' % num_params)
 
 os.chdir(cwd)
-ae.load_state_dict(torch.load("ae_at_epoch50.pth"))
+ae.load_state_dict(torch.load("ae_at_epoch50.pth", map_location=torch.device('cpu')))
 
-data_gt = []
-data_recon = []
-mse_array = []
+z_array = []
 
-for batch_idx, sample in enumerate(test_data):
+for batch_idx, sample in enumerate(data):
+    print (batch_idx)
     sample = sample.reshape((1, 1, 512, 512)) 
     sample = sample.astype('float32')
     sample = torch.from_numpy(sample)
     sample = sample.to(device)
     # ae reconstruction
-    sample_recon = ae(sample)
-    data_gt_sample = sample.detach().cpu().numpy()[0][0]
-    data_recon_sample = sample_recon.detach().cpu().numpy()[0][0]
-    data_gt.append(data_gt_sample)
-    data_recon.append(data_recon_sample)
+    z = ae.encode(sample).detach().numpy().flatten()
+    z_array.append(z)
 
-data_gt = np.array(data_gt)
-data_recon = np.array(data_recon)
-
-
-#np.save("/qscratch/ashriva/Experiments/Code/dim_reduction/results/pvd_100_ae", data_recon)
-
-np.save("data_gt", data_gt)
-np.save("data_recon", data_recon)
+z_array = np.array(z_array)
+print (z_array.shape)
+np.savetxt("z.txt", z_array)
